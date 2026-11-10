@@ -210,8 +210,15 @@ Log level can be configured via `LOG_LEVEL` environment variable (DEBUG, INFO, W
 
 **Energidataservice:**
 - No authentication required
-- The implementation includes placeholder for price area (DK1/DK2) - adjust as needed
-- Prices are converted from MWh to kWh
+- Run `schema_electricity_price.sql` to set up the price meters and the `electricity_price` view
+- Each meter is one price component (spot, grid tariff, grid discount, Energinet tariffs, elafgift),
+  stored in DKK/kWh excluding VAT, with UTC timestamps: hourly before `QUARTERLY_FROM`
+  (default 2025-12-01, when the meter switched to 15-minute readings) and per quarter-hour after
+- Backfill from a date with `python main.py 2025-12-01`
+- The meter identifier decides what is fetched: `spot:<PriceArea>` or `tariff:<GLN_Number>:<ChargeTypeCode>`
+- The `electricity_price` view shows the breakdown per hour and the total including VAT and supplier markup
+- The DatahubPricelist dataset allows roughly one request per minute
+- `check_meter_resolution.py` shows whether your Eloverblik meter is read hourly or every 15 minutes
 
 ## Troubleshooting
 

@@ -32,6 +32,10 @@ class Config:
         "ENERGIDATASERVICE_BASE_URL", "https://api.energidataservice.dk"
     )
 
+    # Danish date the electricity meter switched from hourly to 15-minute
+    # readings. Prices are stored hourly before this date and per quarter after.
+    QUARTERLY_FROM: str = os.getenv("QUARTERLY_FROM", "2025-12-01")
+
     # Logging configuration
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

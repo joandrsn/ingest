@@ -27,9 +27,13 @@ def main():
     # Setup logging
     setup_logging()
 
-    # Set default date range (last 7 days)
+    # Default date range is the last 7 days; pass a start date to backfill,
+    # e.g. "python main.py 2025-12-01"
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=7)
+    if len(sys.argv) > 1:
+        start_date = datetime.strptime(sys.argv[1], "%Y-%m-%d")
+    else:
+        start_date = end_date - timedelta(days=7)
     logger.info(
         "Starting data ingestion: %s to %s",
         start_date.strftime("%Y-%m-%d"),

@@ -19,7 +19,7 @@ CREATE TABLE utility (
 );
 CREATE TABLE source (
     source_id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE   -- e.g. "Eloverblik", "Techem"
+    name VARCHAR(50) NOT NULL UNIQUE,  -- e.g. "Eloverblik", "Techem"
     credential_id INT REFERENCES credential(credential_id)
 );
 CREATE TABLE meter (

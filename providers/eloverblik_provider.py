@@ -119,12 +119,9 @@ class EloverblikProvider(BaseProvider):
                 date_from = start_date.strftime("%Y-%m-%d")
                 date_to = end_date.strftime("%Y-%m-%d")
 
-                # Determine aggregation based on resolution
-                aggregation = (
-                    "Quarter" if meter["resolution"] == "quarterly" else "Hour"
-                )
-
-                url = f"{self.base_url}/meterdata/gettimeseries/{date_from}/{date_to}/{aggregation}"
+                # "Actual" returns the data in the resolution it was read in
+                # (hourly or 15-minute), so a meter that switched gets both
+                url = f"{self.base_url}/meterdata/gettimeseries/{date_from}/{date_to}/Actual"
 
                 headers = {
                     "Authorization": f"Bearer {self.access_token}",
@@ -184,6 +181,17 @@ class EloverblikProvider(BaseProvider):
                     for period in periods:
                         points = period.get("Point", [])
 
+                        resolution = period.get("resolution")
+                        if resolution == "PT15M":
+                            step = timedelta(minutes=15)
+                        elif resolution == "PT1H":
+                            step = timedelta(hours=1)
+                        else:
+                            self.logger.warning(
+                                f"Skipping period with unsupported resolution {resolution}"
+                            )
+                            continue
+
                         for point in points:
                             # Position is 1-indexed in the API
                             position = int(point.get("position", 0))
@@ -199,8 +207,8 @@ class EloverblikProvider(BaseProvider):
                                     start_str.replace("Z", "+00:00")
                                 )
 
-                                # Add hours based on position (position 1 = hour 0-1, etc.)
-                                timestamp = timestamp + timedelta(hours=position - 1)
+                                # Position 1 is the first interval of the period
+                                timestamp = timestamp + step * (position - 1)
 
                                 readings.append(
                                     {
