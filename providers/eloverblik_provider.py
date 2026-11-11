@@ -3,11 +3,11 @@
 import requests
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
-from providers.base_provider import BaseProvider
+from providers.meter_reading_provider import MeterReadingProvider
 from config import Config
 
 
-class EloverblikProvider(BaseProvider):
+class EloverblikProvider(MeterReadingProvider):
     """Provider for Eloverblik electricity consumption data.
 
     Uses refresh token authentication to obtain 24-hour access tokens.

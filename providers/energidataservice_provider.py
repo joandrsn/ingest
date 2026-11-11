@@ -6,11 +6,11 @@ import requests
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-from providers.base_provider import BaseProvider
+from providers.meter_reading_provider import MeterReadingProvider
 from config import Config
 
 
-class EnergidataserviceProvider(BaseProvider):
+class EnergidataserviceProvider(MeterReadingProvider):
     """Provider for Energidataservice electricity price data.
 
     This API requires no authentication.

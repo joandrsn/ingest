@@ -9,6 +9,7 @@ from utils.database import Database
 from providers.eloverblik_provider import EloverblikProvider
 from providers.techem_provider import TechemProvider
 from providers.energidataservice_provider import EnergidataserviceProvider
+from providers.connectedcars_provider import ConnectedCarsProvider
 
 
 def setup_logging():
@@ -59,7 +60,12 @@ def main():
         return 1
 
     # List of providers to run
-    provider_classes = [EloverblikProvider, TechemProvider, EnergidataserviceProvider]
+    provider_classes = [
+        EloverblikProvider,
+        TechemProvider,
+        EnergidataserviceProvider,
+        ConnectedCarsProvider,
+    ]
 
     # Track results
     results = {"success": [], "failed": [], "inserted": {}}

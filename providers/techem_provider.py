@@ -3,11 +3,11 @@
 import requests
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
-from providers.base_provider import BaseProvider
+from providers.meter_reading_provider import MeterReadingProvider
 from config import Config
 
 
-class TechemProvider(BaseProvider):
+class TechemProvider(MeterReadingProvider):
     """Provider for Techem heating and water consumption data.
 
     Uses username/password authentication to obtain 15-minute access tokens.

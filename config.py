@@ -32,6 +32,19 @@ class Config:
         "ENERGIDATASERVICE_BASE_URL", "https://api.energidataservice.dk"
     )
 
+    # ConnectedCars API configuration. The namespace is the brand app the
+    # account belongs to: minvolkswagen, minskoda, minseat or mitaudi.
+    CONNECTEDCARS_AUTH_URL: str = os.getenv(
+        "CONNECTEDCARS_AUTH_URL",
+        "https://auth-api.connectedcars.io/auth/login/email/password",
+    )
+    CONNECTEDCARS_GRAPHQL_URL: str = os.getenv(
+        "CONNECTEDCARS_GRAPHQL_URL", "https://api.connectedcars.io/graphql"
+    )
+    CONNECTEDCARS_NAMESPACE: str = os.getenv(
+        "CONNECTEDCARS_NAMESPACE", "minvolkswagen"
+    )
+
     # Danish date the electricity meter switched from hourly to 15-minute
     # readings. Prices are stored hourly before this date and per quarter after.
     QUARTERLY_FROM: str = os.getenv("QUARTERLY_FROM", "2025-12-01")

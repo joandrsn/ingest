@@ -1,12 +1,13 @@
 # Data Ingestion Framework
 
-A maintainable Python framework for ingesting historical data from multiple utility providers into a PostgreSQL database.
+A maintainable Python framework for ingesting historical data from multiple utility providers, and car usage, into a PostgreSQL database.
 
 ## Supported Providers
 
 1. **Eloverblik** - Power consumption data (refresh token authentication, 24-hour token validity)
 2. **Techem** - Hot water, cold water, and heating data (username/password authentication, 15-minute token validity)
 3. **Energidataservice** - Electricity price data (no authentication required)
+4. **ConnectedCars** - Car trips, routes and refuel events (email/password authentication, 1-hour token validity)
 
 ## Features
 
@@ -27,10 +28,14 @@ ingest/
 ├── .env.example           # Example environment variables
 ├── providers/             # Provider implementations
 │   ├── __init__.py
-│   ├── base_provider.py           # Abstract base class
+│   ├── base_provider.py           # Abstract base class: source, credentials, token
+│   ├── meter_reading_provider.py  # Base class for providers that store meter readings
 │   ├── eloverblik_provider.py     # Eloverblik implementation
 │   ├── techem_provider.py         # Techem implementation
-│   └── energidataservice_provider.py  # Energidataservice implementation
+│   ├── energidataservice_provider.py  # Energidataservice implementation
+│   ├── connectedcars_client.py    # ConnectedCars API client (HTTP only)
+│   └── connectedcars_provider.py  # ConnectedCars implementation
+├── tests/                 # Unit tests (python -m unittest discover tests)
 └── utils/                 # Utility modules
     ├── __init__.py
     └── database.py        # Database connection manager
@@ -148,7 +153,9 @@ By default, this fetches data for the last 7 days. You can modify the date range
 To add a new data provider:
 
 1. Create a new file in `providers/` (e.g., `newprovider_provider.py`)
-2. Inherit from `BaseProvider`
+2. Inherit from `MeterReadingProvider` if the data is one value per meter per
+   timestamp. Otherwise inherit from `BaseProvider` and implement `run()` with
+   your own tables, as `ConnectedCarsProvider` does
 3. Implement `authenticate()` and `fetch_data()` methods
 4. Add to `provider_classes` list in `main.py`
 5. Add source and credentials to database
@@ -156,9 +163,9 @@ To add a new data provider:
 Example:
 
 ```python
-from providers.base_provider import BaseProvider
+from providers.meter_reading_provider import MeterReadingProvider
 
-class NewProvider(BaseProvider):
+class NewProvider(MeterReadingProvider):
     def __init__(self, db_connection):
         super().__init__(db_connection, 'NewProvider')
         
@@ -219,6 +226,22 @@ Log level can be configured via `LOG_LEVEL` environment variable (DEBUG, INFO, W
 - The `electricity_price` view shows the breakdown per hour and the total including VAT and supplier markup
 - The DatahubPricelist dataset allows roughly one request per minute
 - `check_meter_resolution.py` shows whether your Eloverblik meter is read hourly or every 15 minutes
+
+**ConnectedCars:**
+- Run `schema_car.sql`, then set the email and password of your ConnectedCars account
+  (the login of the Min Volkswagen app) on the credential row it creates; the file shows how
+- `CONNECTEDCARS_NAMESPACE` in `.env` is the brand app: `minvolkswagen` (default), `minskoda`,
+  `minseat` or `mitaudi`
+- Stores `vehicle`, `car_trip`, `car_trip_position` (the route, with speed) and
+  `car_refuel_event`; vehicles are created from the account. Rows are upserted on the
+  provider's ids, so a period can be fetched again. Zero-distance trips are not fetched
+- Backfill from a date with `python main.py 2022-08-01`
+- `car_trip.fuel_used_l` is an estimate from the fuel gauge spread over the distance driven:
+  trips on the same day get nearly the same km/l. Use it for totals, not to compare trips
+- Refuel events are whole litres from the gauge, which tops out before the tank is full
+- The `car_usage_monthly` view shows trips, distance, hours, fuel and long trips per month
+- `probe_connectedcars.py` is a read-only tool for exploring the API. It reads
+  `CONNECTEDCARS_EMAIL` and `CONNECTEDCARS_PASSWORD` from `.env`
 
 ## Troubleshooting
 
