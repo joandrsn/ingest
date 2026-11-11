@@ -202,6 +202,7 @@ class BaseProvider(ABC):
                           AND r.timestamp = t.timestamp
                     )
                     ORDER BY t.timestamp
+                    ON CONFLICT (meter_id, timestamp) DO NOTHING
                 """
                 inserted_count = self.db.execute(insert_new)
 
